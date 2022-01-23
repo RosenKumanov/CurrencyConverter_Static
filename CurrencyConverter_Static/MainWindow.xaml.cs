@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Text.RegularExpressions;
 
 namespace CurrencyConverter_Static
 {
@@ -102,14 +103,26 @@ namespace CurrencyConverter_Static
         }
         private void Clear_Click(object sender, RoutedEventArgs e)
         {
-            lblCurrency.Content = "";
-            cmbFromCurrency.SelectedIndex = 0;
-            cmbToCurrency.SelectedIndex = 0;
+            ClearControls();   
         }
 
+        private void ClearControls()
+        {
+            lblCurrency.Content = string.Empty;
+            txtCurrency.Text = string.Empty;
+            if(cmbFromCurrency.Items.Count > 0)
+            {
+                cmbFromCurrency.SelectedIndex = 0;
+            }
+            if(cmbToCurrency.Items.Count > 0)
+            {
+                cmbToCurrency.SelectedIndex = 0;
+            }
+        }
         private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
         {
-
+            Regex regex = new Regex("[^0-9]+");
+            e.Handled = regex.IsMatch(e.Text);
         }
     }
 }

@@ -41,8 +41,9 @@
             <Label Height="40" Width="1000" HorizontalContentAlignment="Center" 
                    VerticalContentAlignment="Center" Content="Converted Currency" 
                    FontSize="20"></Label>
-            <Label Name="lblCurrency" Height="40" Width="1000" HorizontalContentAlignment="Center" 
-                   VerticalContentAlignment="Center" FontSize="20">
+            <Label Name="lblCurrency" Height="40" Width="1000" Foreground="#1778E8"
+                   HorizontalContentAlignment="Center" 
+                   VerticalContentAlignment="Center" FontSize="25">
             </Label>
         </StackPanel>
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" 
