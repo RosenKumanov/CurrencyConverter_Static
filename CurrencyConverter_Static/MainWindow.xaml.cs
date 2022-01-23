@@ -30,10 +30,51 @@ namespace CurrencyConverter_Static
 
         private void Convert_Click(object sender, RoutedEventArgs e)
         {
+            //Double variable to store converted currency 
             double ConvertedValue;
+            //Check if Currency box is null or empty 
             if (txtCurrency.Text == null || txtCurrency.Text.Trim() == "")
             {
-                MessageBox.Show("Please enter value", "Information", MessageBoxButton.OK, MessageBoxImage.Warning);
+                //displaying message if Currency is empty/null
+                MessageBox.Show("Please enter value", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                //After clicking OK button, focus becomes the currency textbox
+                txtCurrency.Focus();
+                return;
+            }
+            //Check if combobox FromCurrency is empty/not selected
+            else if(cmbFromCurrency.SelectedIndex == 0 || cmbFromCurrency.SelectedValue == null)
+            {
+                //display message if combobox is empty/not selected
+                MessageBox.Show("Please enter Currency From", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                cmbFromCurrency.Focus();
+                return;
+            }
+            //check if combobox ToCurrency is empty/not selected
+            else if (cmbToCurrency.SelectedIndex == 0 || cmbToCurrency.SelectedValue == null)
+            {
+                //display message if combobox is empty/not selected
+                MessageBox.Show("Please enter Currency To", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                cmbToCurrency.Focus();
+                return;
+            }
+            //check if From and To currency are the same
+            if(cmbFromCurrency.Text == cmbToCurrency.Text)
+            {
+                //set ConvertedValue amount to the input value
+                //parsing to Double from string
+                ConvertedValue = double.Parse(txtCurrency.Text);
+
+                //setting label "Currency" to show the new currency type and value
+                lblCurrency.Content = cmbToCurrency.Text + " " + ConvertedValue.ToString("N3");
+            }
+            else
+            {
+                //calculate converted value by multiplying "FromCurrency" value with the Input value, then gets divided by the "ToCurrency" Value
+                ConvertedValue = (double.Parse(cmbFromCurrency.SelectedValue.ToString()) * 
+                    double.Parse(txtCurrency.Text)) / 
+                    double.Parse(cmbToCurrency.SelectedValue.ToString());
+                //setting label "Currency" to show the new currency type and value
+                lblCurrency.Content = cmbToCurrency.Text + " " + ConvertedValue.ToString("N3");
             }
         }
 
@@ -61,7 +102,9 @@ namespace CurrencyConverter_Static
         }
         private void Clear_Click(object sender, RoutedEventArgs e)
         {
-            
+            lblCurrency.Content = "";
+            cmbFromCurrency.SelectedIndex = 0;
+            cmbToCurrency.SelectedIndex = 0;
         }
 
         private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
