@@ -14,19 +14,96 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Text.RegularExpressions;
+using System.Net.Http;
+using Newtonsoft.Json;
 
 namespace CurrencyConverter_Static
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
+
+
     public partial class MainWindow : Window
     {
+        Root val = new Root();
+        public class Root
+        {
+            public Rate rates { get; set; }
+        }
+
+        public class Rate
+        {
+            public double BGN { get; set; }
+            public double EUR { get; set; }
+            public double USD { get; set; }
+            public double AUD { get; set; }
+            public double GBP { get; set; }
+            public double JPY { get; set; }
+        }
         public MainWindow()
         {
             InitializeComponent();
+            ClearControls();
+            GetValue();
+        }
+
+        
+
+        private async void GetValue()
+        {
+            val = await GetData<Root>("https://openexchangerates.org/api/latest.json?app_id=32da1ea2c7c54613b9dd34559555d079");
             BindCurrency();
-            
+        }
+
+        public static async Task<Root> GetData<T>(string url)
+        {
+            var myRoot = new Root();
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromMinutes(1); //the timespan to await before the request times out
+                    HttpResponseMessage response = await client.GetAsync(url);
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK) //check API status responce code
+                    {
+                        var ResponceString = await response.Content.ReadAsStringAsync(); //serialize HTTP content to string
+
+                        var ResponceObject = JsonConvert.DeserializeObject<Root>(ResponceString);
+
+                        return ResponceObject; //return API responce
+
+                    }
+                    return myRoot;
+                }
+            }
+            catch
+            {
+                return myRoot;
+            }
+        }
+        private void BindCurrency()
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Text");
+            dt.Columns.Add("Rate");
+
+            //Add rows in the Datatable with text and value
+            dt.Rows.Add("--SELECT--", 0);
+            dt.Rows.Add("BGN", val.rates.BGN);
+            dt.Rows.Add("EUR", val.rates.EUR);
+            dt.Rows.Add("USD", val.rates.USD);
+            dt.Rows.Add("AUD", val.rates.AUD);
+            dt.Rows.Add("GBP", val.rates.GBP);
+            dt.Rows.Add("JPY", val.rates.JPY);
+
+
+            cmbFromCurrency.ItemsSource = dt.DefaultView;
+            cmbFromCurrency.DisplayMemberPath = "Text";
+            cmbFromCurrency.SelectedValuePath = "Rate";
+            cmbFromCurrency.SelectedIndex = 0;
+
+            cmbToCurrency.ItemsSource = dt.DefaultView;
+            cmbToCurrency.DisplayMemberPath = "Text";
+            cmbToCurrency.SelectedValuePath = "Rate";
+            cmbToCurrency.SelectedIndex = 0;
         }
 
         private void Convert_Click(object sender, RoutedEventArgs e)
@@ -43,10 +120,10 @@ namespace CurrencyConverter_Static
                 return;
             }
             //Check if combobox FromCurrency is empty/not selected
-            else if(cmbFromCurrency.SelectedIndex == 0 || cmbFromCurrency.SelectedValue == null)
+            else if (cmbFromCurrency.SelectedIndex == 0 || cmbFromCurrency.SelectedValue == null)
             {
                 //display message if combobox is empty/not selected
-                MessageBox.Show("Please enter Currency From", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Please select currency From", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
                 cmbFromCurrency.Focus();
                 return;
             }
@@ -54,12 +131,12 @@ namespace CurrencyConverter_Static
             else if (cmbToCurrency.SelectedIndex == 0 || cmbToCurrency.SelectedValue == null)
             {
                 //display message if combobox is empty/not selected
-                MessageBox.Show("Please enter Currency To", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Please select currency To", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
                 cmbToCurrency.Focus();
                 return;
             }
             //check if From and To currency are the same
-            if(cmbFromCurrency.Text == cmbToCurrency.Text)
+            if (cmbFromCurrency.Text == cmbToCurrency.Text)
             {
                 //set ConvertedValue amount to the input value
                 //parsing to Double from string
@@ -71,50 +148,27 @@ namespace CurrencyConverter_Static
             else
             {
                 //calculate converted value by multiplying "FromCurrency" value with the Input value, then gets divided by the "ToCurrency" Value
-                ConvertedValue = (double.Parse(cmbFromCurrency.SelectedValue.ToString()) * 
-                    double.Parse(txtCurrency.Text)) / 
-                    double.Parse(cmbToCurrency.SelectedValue.ToString());
+                ConvertedValue = (double.Parse(cmbToCurrency.SelectedValue.ToString()) *
+                    double.Parse(txtCurrency.Text)) /
+                    double.Parse(cmbFromCurrency.SelectedValue.ToString());
                 //setting label "Currency" to show the new currency type and value
                 lblCurrency.Content = cmbToCurrency.Text + " " + ConvertedValue.ToString("N3");
             }
         }
-
-        private void BindCurrency()
-        {
-            DataTable dtCurrency = new DataTable();
-            dtCurrency.Columns.Add("Text");
-            dtCurrency.Columns.Add("Value");
-
-            //Add rows in the Datatable with text and value
-            dtCurrency.Rows.Add("--SELECT--", 0);
-            dtCurrency.Rows.Add("BGN", 1);
-            dtCurrency.Rows.Add("EUR", 1.90);
-            dtCurrency.Rows.Add("USD", 1.70);
-
-            cmbFromCurrency.ItemsSource = dtCurrency.DefaultView;
-            cmbFromCurrency.DisplayMemberPath = "Text";
-            cmbFromCurrency.SelectedValuePath = "Value";
-            cmbFromCurrency.SelectedIndex = 0;
-
-            cmbToCurrency.ItemsSource = dtCurrency.DefaultView;
-            cmbToCurrency.DisplayMemberPath = "Text";
-            cmbToCurrency.SelectedValuePath = "Value";
-            cmbToCurrency.SelectedIndex = 0; 
-        }
         private void Clear_Click(object sender, RoutedEventArgs e)
         {
-            ClearControls();   
+            ClearControls();
         }
 
         private void ClearControls()
         {
             lblCurrency.Content = string.Empty;
             txtCurrency.Text = string.Empty;
-            if(cmbFromCurrency.Items.Count > 0)
+            if (cmbFromCurrency.Items.Count > 0)
             {
                 cmbFromCurrency.SelectedIndex = 0;
             }
-            if(cmbToCurrency.Items.Count > 0)
+            if (cmbToCurrency.Items.Count > 0)
             {
                 cmbToCurrency.SelectedIndex = 0;
             }
