@@ -19,8 +19,6 @@ using Newtonsoft.Json;
 
 namespace CurrencyConverter_Static
 {
-
-
     public partial class MainWindow : Window
     {
         Root val = new Root();
@@ -37,6 +35,9 @@ namespace CurrencyConverter_Static
             public double AUD { get; set; }
             public double GBP { get; set; }
             public double JPY { get; set; }
+            public double MXN { get; set; }
+
+            public double KRW { get; set; }
         }
         public MainWindow()
         {
@@ -44,15 +45,11 @@ namespace CurrencyConverter_Static
             ClearControls();
             GetValue();
         }
-
-        
-
         private async void GetValue()
         {
             val = await GetData<Root>("https://openexchangerates.org/api/latest.json?app_id=32da1ea2c7c54613b9dd34559555d079");
             BindCurrency();
         }
-
         public static async Task<Root> GetData<T>(string url)
         {
             var myRoot = new Root();
@@ -64,11 +61,11 @@ namespace CurrencyConverter_Static
                     HttpResponseMessage response = await client.GetAsync(url);
                     if (response.StatusCode == System.Net.HttpStatusCode.OK) //check API status responce code
                     {
-                        var ResponceString = await response.Content.ReadAsStringAsync(); //serialize HTTP content to string
+                        var ResponseString = await response.Content.ReadAsStringAsync(); //serialize HTTP content to string
 
-                        var ResponceObject = JsonConvert.DeserializeObject<Root>(ResponceString);
+                        var ResponseObject = JsonConvert.DeserializeObject<Root>(ResponseString);
 
-                        return ResponceObject; //return API responce
+                        return ResponseObject; //return API responce
 
                     }
                     return myRoot;
@@ -93,6 +90,8 @@ namespace CurrencyConverter_Static
             dt.Rows.Add("AUD", val.rates.AUD);
             dt.Rows.Add("GBP", val.rates.GBP);
             dt.Rows.Add("JPY", val.rates.JPY);
+            dt.Rows.Add("MXN", val.rates.MXN);
+            dt.Rows.Add("KRW", val.rates.KRW);
 
 
             cmbFromCurrency.ItemsSource = dt.DefaultView;
@@ -105,7 +104,6 @@ namespace CurrencyConverter_Static
             cmbToCurrency.SelectedValuePath = "Rate";
             cmbToCurrency.SelectedIndex = 0;
         }
-
         private void Convert_Click(object sender, RoutedEventArgs e)
         {
             //Double variable to store converted currency 
